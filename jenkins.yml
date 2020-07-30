@@ -7,7 +7,19 @@ spec:
     requests:
       storage: 5Gi
   accessModes:
-  - ReadWriteOnce
+  - ReadWriteMany
+  storageClassName: standard
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: deploy-pvc
+spec:
+  resources:
+    requests:
+      storage: 1Gi
+  accessModes:
+  - ReadWriteMany
   storageClassName: standard
 ---
 apiVersion: v1
@@ -44,13 +56,18 @@ spec:
     spec:
       containers:
       - name: jenkins-con
-        image: 202011501/kube_jenkins
+        image: 202011501/kube_jenkins:latest
         ports:
         - containerPort: 8080
         volumeMounts:
         - name: jenkins-pvc
           mountPath: /var/lib/jenkins
+        - name: deploy-pvc
+          mountPath: /root
       volumes:
       - name: jenkins-pvc
         persistentVolumeClaim:
           claimName: jenkins-pvc
+      - name: deploy-pvc
+        persistentVolumeClaim:
+          claimName: deploy-pvc
